@@ -1,3 +1,4 @@
 .vscode
 .lsp
 /renderer
+.DS_Store

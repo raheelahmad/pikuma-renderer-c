@@ -76,12 +76,7 @@ void render_color_buffer(void) {
 void clear_color_buffer(uint32_t color) {
   for(int j = 0; j < window_height; j++) {
     for(int i = 0; i < window_width; i++) {
-      int index = i + j * window_width;
-      if (i - j >= -2 && i -j <= 2) {
-        color_buffer[index] = 0xFF0122AA;
-      } else {
-        color_buffer[index] = color;
-      }
+      color_buffer[index] = 0xFF0122AA;
     }
   }
 }
