@@ -83,19 +83,29 @@ void clear_color_buffer(uint32_t color) {
   }
 }
 
+void draw_rect(int x, int y, int width, int height, uint32_t color) {
+  for(int j = 0; j < (0 + height); j++) {
+    for(int i = 0; i < (0 + width); i++) {
+      int index = (y + j) * window_width + (x + i) ;
+      color_buffer[index] = color;
+    }
+  }
+}
+
 void render_grid(void) {
   int num_grids_w = 20;
   int num_grids_h = 20;
   int grid_w = window_width / num_grids_w;
   int grid_h = window_height / num_grids_h;
 
-  int grid_thickness = 4;
+  int grid_thickness = 1;
   uint32_t color = 0xFFFFFFFF;
 
   // columns
   for (int j = 0; j < window_height; j++) {
     int grid_h_remainder = (j % grid_h);
     int grid_h_index = j == 0 ? 0 : j / grid_h;
+
     if (grid_h_index > 0 && grid_h_remainder <= grid_thickness) {
       for (int i = 0; i < window_width; i++) {
         int index = j * window_width + i;
@@ -114,19 +124,6 @@ void render_grid(void) {
       }
     }
   }
-
-  // rows
-  for (int j = 0; j < window_height; j++) {
-    for (int g_i = 1; g_i < num_grids_w; g_i++) {
-
-      int g_i_start = g_i * grid_w;
-
-      for (int m = 0; m < grid_thickness; m++) {
-        int index = j * window_width + g_i_start + m; 
-        color_buffer[index] = color;
-      }
-    }
-  }
 }
 
 void render(void) {
@@ -136,6 +133,8 @@ void render(void) {
   // render the color buffer and clear it
   /* clear_color_buffer(0xFFFFFF00); */
   render_grid();
+  draw_rect(120, 230, 300, 500, 0x3239AA);
+  draw_rect(820, 30, 30, 500, 0x32390A);
   render_color_buffer();
 
   SDL_RenderPresent(renderer);
