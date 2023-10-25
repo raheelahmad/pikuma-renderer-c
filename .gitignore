@@ -2,3 +2,4 @@
 .lsp
 /renderer
 .DS_Store
+/.cache/

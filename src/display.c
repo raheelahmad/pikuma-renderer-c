@@ -68,6 +68,10 @@ void draw_rect(int x, int y, int width, int height, uint32_t color) {
   }
 }
 
+void draw_pixel(int x, int y, uint32_t color) {
+  color_buffer[y * window_width + x] = color;
+}
+
 void render_grid(void) {
   int num_grids_w = 20;
   int num_grids_h = 20;
