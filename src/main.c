@@ -75,18 +75,27 @@ void update() {
   }
 }
 
-void render(void) {
-  SDL_SetRenderDrawColor(renderer, 210, 220, 232, 255);
-  SDL_RenderClear(renderer);
-
+void draw_cube() {
   for (int i = 0; i < N_POINTS; i += 1) {
     vec2_t p = projected_points[i];
     draw_rect(p.x + window_width / 2, p.y + window_height / 2, 4, 4, 0x8AAABB);
   }
-  render_color_buffer();
+}
 
+void render(void) {
+  // Set background color; but we are always rendering the full screen with our
+  // buffer, so don't need this. SDL_SetRenderDrawColor(renderer, 210, 220, 232,
+  // 255); SDL_RenderClear(renderer);
+
+  // clear our buffer memory so we have a blank slate
   uint32_t color = 0xFF0000;
   clear_color_buffer(color);
+
+  // draw on to the buffer
+  draw_cube();
+
+  // render
+  render_color_buffer();
 
   SDL_RenderPresent(renderer);
 }
