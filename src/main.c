@@ -1,6 +1,7 @@
 #include "display.h"
 #include "vector.h"
 #include <SDL2/SDL.h>
+#include <_types/_uint32_t.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -45,23 +46,32 @@ vec2_t project(vec3_t point) {
   return p;
 }
 
-float camera_z_increment = 0.01;
+vec3_t rotate(vec3_t point, vec3_t rotation) {
+  vec3_t rotated_point = point;
+  rotated_point = rotate_x(rotated_point, rotation.x);
+  rotated_point = rotate_y(rotated_point, rotation.y);
+  rotated_point = rotate_z(rotated_point, rotation.z);
+  return rotated_point;
+}
+
+vec3_t cube_rotation = {0, 0, 0};
 
 void update() {
+  cube_rotation.z += 0.005;
+  cube_rotation.y += 0.005;
+  cube_rotation.x += 0.005;
+  // Project the points on to the projection plane.
   for (int i = 0; i < N_POINTS; i++) {
+    // transform
     vec3_t point = cube_points[i];
+    point = rotate(point, cube_rotation);
+
     // move the points away from the camera:
     point.z -= camera_position.z;
+
+    // project
     vec2_t projected_point = project(point);
     projected_points[i] = projected_point;
-  }
-
-  camera_position.z += camera_z_increment;
-  if (camera_position.z >= 5.0) {
-    camera_z_increment = -0.01;
-  }
-  if (camera_position.z < -5.0) {
-    camera_z_increment = 0.01;
   }
 }
 
@@ -74,7 +84,9 @@ void render(void) {
     draw_rect(p.x + window_width / 2, p.y + window_height / 2, 4, 4, 0x8AAABB);
   }
   render_color_buffer();
-  clear_color_buffer(0xFF0000);
+
+  uint32_t color = 0xFF0000;
+  clear_color_buffer(color);
 
   SDL_RenderPresent(renderer);
 }
@@ -100,9 +112,6 @@ void process_input() {
 int main(void) {
   is_running = initialize_window();
   setup();
-
-  vec3_t my_vec = {2.0, 1.0, 3.0};
-  size_t size = sizeof(my_vec);
 
   while (is_running) {
     process_input();
