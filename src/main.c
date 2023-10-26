@@ -7,23 +7,19 @@
 #include <stdint.h>
 #include <stdio.h>
 
+bool drawing_sierpinski = false;
+
 /// Decleare an array of vectors/points
-const int N_POINTS = 9 * 9 * 9;
-vec3_t cube_points[N_POINTS];
-vec2_t projected_points[N_POINTS];
+const int CUBE_POINTS = 9 * 9 * 9;
+/// The model's points in 3D space
+vec3_t cube_points[CUBE_POINTS];
+/// The projected model points on to the 2D space. These are scaled to be in the
+/// screen space.
+vec2_t projected_points[CUBE_POINTS];
 vec3_t camera_position = {0, 0, -5};
 float fov_factor = 640;
 
-void setup() {
-  // Allocate the required memory in bytes to hold the color buffer
-  color_buffer =
-      (uint32_t *)malloc(sizeof(uint32_t) * window_width * window_height);
-
-  // create an SDL texture that is used to display the color buffer
-  color_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
-                                           SDL_TEXTUREACCESS_STREAMING,
-                                           window_width, window_height);
-
+void setup_cube_points() {
   // start loading array of points in the -1/1 cube of size 9 x 9 x 9
   int point_index = 0;
   // 9 points, so 8 spans, divided by 2 (-1 → 1): 0.25
@@ -37,6 +33,18 @@ void setup() {
       }
     }
   }
+}
+
+void setup() {
+  // Allocate the required memory in bytes to hold the color buffer
+  color_buffer =
+      (uint32_t *)malloc(sizeof(uint32_t) * window_width * window_height);
+
+  // create an SDL texture that is used to display the color buffer
+  color_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
+                                           SDL_TEXTUREACCESS_STREAMING,
+                                           window_width, window_height);
+  setup_cube_points();
 }
 
 // Simply project a 3d point on to 2D
@@ -61,7 +69,7 @@ void update() {
   cube_rotation.y += 0.005;
   cube_rotation.x += 0.005;
   // Project the points on to the projection plane.
-  for (int i = 0; i < N_POINTS; i++) {
+  for (int i = 0; i < CUBE_POINTS; i++) {
     // transform
     vec3_t point = cube_points[i];
     point = rotate(point, cube_rotation);
@@ -76,11 +84,13 @@ void update() {
 }
 
 void draw_cube() {
-  for (int i = 0; i < N_POINTS; i += 1) {
+  for (int i = 0; i < CUBE_POINTS; i += 1) {
     vec2_t p = projected_points[i];
     draw_rect(p.x + window_width / 2, p.y + window_height / 2, 4, 4, 0x8AAABB);
   }
 }
+
+void draw_sierpinski() {}
 
 void render(void) {
   // Set background color; but we are always rendering the full screen with our
@@ -93,6 +103,7 @@ void render(void) {
 
   // draw on to the buffer
   draw_cube();
+  draw_sierpinski();
 
   // render
   render_color_buffer();
