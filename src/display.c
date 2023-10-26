@@ -60,16 +60,19 @@ void clear_color_buffer(uint32_t color) {
 }
 
 void draw_rect(int x, int y, int width, int height, uint32_t color) {
-  for(int j = 0; j < (0 + height); j++) {
-    for(int i = 0; i < (0 + width); i++) {
-      int index = (y + j) * window_width + (x + i) ;
-      color_buffer[index] = color;
+  for(int i = 0; i < (0 + width); i++) {
+    for(int j = 0; j < (0 + height); j++) {
+      int current_x = (x + i);
+      int current_y = (y + j);
+      draw_pixel(current_x, current_y, color);
     }
   }
 }
 
 void draw_pixel(int x, int y, uint32_t color) {
-  color_buffer[y * window_width + x] = color;
+  if (x >= 0 && x < window_width && y >= 0 && y < window_height) {
+    color_buffer[y * window_width + x] = color;
+  }
 }
 
 void render_grid(void) {
