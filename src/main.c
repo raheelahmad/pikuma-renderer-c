@@ -10,7 +10,8 @@
 const int N_POINTS = 9 * 9 * 9;  
 vec3_t cube_points[N_POINTS];
 vec2_t projected_points[N_POINTS];
-float fov_factor = 120;
+vec3_t camera_position = { 0, 0, -5 };
+float fov_factor = 640;
 
 void setup() {
   // Allocate the required memory in bytes to hold the color buffer
@@ -27,9 +28,11 @@ void setup() {
 
   // start loading array of points in the -1/1 cube of size 9 x 9 x 9
   int point_index = 0;
-  for (float x = -1; x <= 1; x+=0.25) {
-    for (float y = -1; y <= 1; y+=0.25) {
-      for (float z = -1; z <= 1; z+=0.25) {
+  // 9 points, so 8 spans, divided by 2 (-1 → 1): 0.25
+  float increment = (1.0 - -1.0) / (9 - 1);
+  for (float x = -1; x <= 1; x+=increment) {
+    for (float y = -1; y <= 1; y+=increment) {
+      for (float z = -1; z <= 1; z+=increment) {
         vec3_t new_point = { .x = x, .y = y, .z = z};
         cube_points[point_index] = new_point;
         point_index += 1;
@@ -41,8 +44,8 @@ void setup() {
 // Simply project a 3d point on to 2D
 vec2_t project(vec3_t point) {
   vec2_t p = {
-    .x = fov_factor * point.x,
-    .y = fov_factor * point.y
+    .x = (fov_factor * point.x) / point.z,
+    .y = (fov_factor * point.y) / point.z
   };
   return p;
 }
@@ -50,6 +53,8 @@ vec2_t project(vec3_t point) {
 void update() {
   for (int i = 0; i < N_POINTS; i++) {
     vec3_t point = cube_points[i];
+    // move the points away from the camera:
+    point.z -= camera_position.z;
     vec2_t projected_point = project(point);
     projected_points[i] = projected_point;
   }
