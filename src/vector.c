@@ -21,3 +21,11 @@ vec3_t rotate_z(vec3_t p, float angle) {
                           .z = p.z};
   return rotated_point;
 }
+
+vec3_t rotate(vec3_t point, vec3_t rotation) {
+  vec3_t rotated_point = point;
+  rotated_point = rotate_x(rotated_point, rotation.x);
+  rotated_point = rotate_y(rotated_point, rotation.y);
+  rotated_point = rotate_z(rotated_point, rotation.z);
+  return rotated_point;
+}
