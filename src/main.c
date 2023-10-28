@@ -2,6 +2,7 @@
 #include "vector.h"
 #include <SDL2/SDL.h>
 #include <_types/_uint32_t.h>
+#include <_types/_uint64_t.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -10,6 +11,8 @@
 #include <sys/_types/_null.h>
 
 bool drawing_sierpinski = false;
+
+uint64_t previous_frame_time;
 
 /// Declare an array of vectors/points
 const int CUBE_POINTS = 9 * 9 * 9;
@@ -155,6 +158,11 @@ void update_sierpinski() {
 // -------------------------
 
 void update() {
+  // Respect the FPS;
+  // don't update the view until we reach the target time based on the FPS
+  while (!SDL_TICKS_PASSED(SDL_GetTicks64(), previous_frame_time + FRAME_TARGET_TIME));
+  previous_frame_time = SDL_GetTicks64();
+  
   if (drawing_sierpinski) {
     update_sierpinski();
   } else {
