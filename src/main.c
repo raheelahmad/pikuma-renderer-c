@@ -12,32 +12,13 @@
 #include <stdlib.h>
 #include <sys/_types/_null.h>
 
-bool drawing_sierpinski = false;
-
 uint64_t previous_frame_time;
 
 /// The projected triangles to render
 triangle_t triangles_to_render[N_MESH_FACES];
 
-const int SIERPINSKI_MAX_COUNT = 10000;
-int current_sierpinski_count = 3;
-vec3_t sierpinski_points[SIERPINSKI_MAX_COUNT];
-vec2_t sierpinski_projected_points[SIERPINSKI_MAX_COUNT];
-
-vec3_t camera_position = {0, 0, -5};
+vec3_t camera_position = {0, 0, -2};
 float fov_factor = 1240;
-
-void setup_sierpinski_points() {
-  // top
-  vec3_t p0 = {0, -0.5, 0};
-  // bottom left
-  vec3_t p1 = {-0.5, 0.5, 0};
-  // bottom right
-  vec3_t p2 = {0.5, 0.5, 0};
-  sierpinski_points[0] = p0;
-  sierpinski_points[1] = p1;
-  sierpinski_points[2] = p2;
-}
 
 void setup() {
   srand(2011);
@@ -49,10 +30,6 @@ void setup() {
   color_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
                                            SDL_TEXTUREACCESS_STREAMING,
                                            window_width, window_height);
-  if (drawing_sierpinski) {
-    setup_sierpinski_points();
-  } else {
-  }
 }
 
 // Simply project a 3d point on to 2D
@@ -104,60 +81,6 @@ void update_cube() {
   }
 }
 
-// ------ SIERPINSKI -------
-vec3_t initial_sierpinski_point() {
-  vec3_t p = {0.1, 0.2, 0};
-  return p;
-}
-
-void add_sierpinski_point() {
-  if (current_sierpinski_count >= SIERPINSKI_MAX_COUNT) {
-    return;
-  }
-
-  int next_index = current_sierpinski_count + 1;
-  vec3_t next_point;
-  if (current_sierpinski_count == 3) {
-    next_point = initial_sierpinski_point();
-  } else {
-    // pick the last point we added:
-    int p_index = current_sierpinski_count - 1;
-    vec3_t p = sierpinski_points[p_index];
-
-    // and one of the three vertex:
-    int vertex_index = rand() % (3);
-    vec3_t vertex = sierpinski_points[vertex_index];
-
-    // next point is at the mid point:
-    vec3_t q = {
-        .x = (p.x + vertex.x) / 2,
-        .y = (p.y + vertex.y) / 2,
-        .z = (p.z + vertex.z) / 2,
-    };
-    next_point = q;
-  }
-
-  sierpinski_points[next_index] = next_point;
-  current_sierpinski_count += 1;
-}
-
-void update_sierpinski() {
-  add_sierpinski_point();
-
-  cube_rotation.z += 0.005;
-  cube_rotation.y += 0.005;
-  cube_rotation.x += 0.005;
-
-  for (int i = 0; i < current_sierpinski_count; i++) {
-    vec3_t point = sierpinski_points[i];
-    point = rotate(point, cube_rotation);
-    point.z -= camera_position.z;
-    vec2_t projected_point = project(point);
-    sierpinski_projected_points[i] = projected_point;
-  }
-}
-// -------------------------
-
 void update() {
   // Respect the FPS;
   // don't update the view until we reach the target time based on the FPS
@@ -168,11 +91,7 @@ void update() {
   }
   previous_frame_time = SDL_GetTicks64();
 
-  if (drawing_sierpinski) {
-    update_sierpinski();
-  } else {
-    update_cube();
-  }
+  update_cube();
 }
 
 void draw_cube() {
@@ -181,13 +100,6 @@ void draw_cube() {
     draw_rect(triangle.points[0].x, triangle.points[0].y, 4, 4, 0x8AAABB);
     draw_rect(triangle.points[1].x, triangle.points[1].y, 4, 4, 0x8AAABB);
     draw_rect(triangle.points[2].x, triangle.points[2].y, 4, 4, 0x8AAABB);
-  }
-}
-
-void draw_sierpinski() {
-  for (int i = 0; i < current_sierpinski_count; i++) {
-    vec2_t p = sierpinski_projected_points[i];
-    draw_rect(p.x + window_width / 2, p.y + window_height / 2, 2, 2, 0x8AAABB);
   }
 }
 
@@ -200,12 +112,7 @@ void render(void) {
   uint32_t color = 0xFF0000;
   clear_color_buffer(color);
 
-  // draw on to the buffer
-  if (drawing_sierpinski) {
-    draw_sierpinski();
-  } else {
-    draw_cube();
-  }
+  draw_cube();
 
   // render
   render_color_buffer();
