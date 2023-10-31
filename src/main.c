@@ -1,4 +1,6 @@
 #include "display.h"
+#include "mesh.h"
+#include "triangle.h"
 #include "vector.h"
 #include <SDL2/SDL.h>
 #include <_types/_uint32_t.h>
@@ -14,13 +16,8 @@ bool drawing_sierpinski = false;
 
 uint64_t previous_frame_time;
 
-/// Declare an array of vectors/points
-const int CUBE_POINTS = 9 * 9 * 9;
-/// The model's points in 3D space
-vec3_t cube_points[CUBE_POINTS];
-/// The projected model points on to the 2D space. These are scaled to be in the
-/// screen space.
-vec2_t projected_points[CUBE_POINTS];
+/// The projected triangles to render
+triangle_t triangles_to_render[N_MESH_FACES];
 
 const int SIERPINSKI_MAX_COUNT = 10000;
 int current_sierpinski_count = 3;
@@ -29,22 +26,6 @@ vec2_t sierpinski_projected_points[SIERPINSKI_MAX_COUNT];
 
 vec3_t camera_position = {0, 0, -5};
 float fov_factor = 1240;
-
-void setup_cube_points() {
-  // start loading array of points in the -1/1 cube of size 9 x 9 x 9
-  int point_index = 0;
-  // 9 points, so 8 spans, divided by 2 (-1 → 1): 0.25
-  float increment = (1.0 - -1.0) / (9 - 1);
-  for (float x = -1; x <= 1; x += increment) {
-    for (float y = -1; y <= 1; y += increment) {
-      for (float z = -1; z <= 1; z += increment) {
-        vec3_t new_point = {.x = x, .y = y, .z = z};
-        cube_points[point_index] = new_point;
-        point_index += 1;
-      }
-    }
-  }
-}
 
 void setup_sierpinski_points() {
   // top
@@ -71,7 +52,6 @@ void setup() {
   if (drawing_sierpinski) {
     setup_sierpinski_points();
   } else {
-    setup_cube_points();
   }
 }
 
@@ -88,18 +68,39 @@ void update_cube() {
   cube_rotation.z += 0.005;
   cube_rotation.y += 0.005;
   cube_rotation.x += 0.005;
+
   // Project the points on to the projection plane.
-  for (int i = 0; i < CUBE_POINTS; i++) {
-    // transform
-    vec3_t point = cube_points[i];
-    point = rotate(point, cube_rotation);
+  // loop all the faces of the cube mesh
+  for (int f = 0; f < N_MESH_FACES; f++) {
+    // each face has 3 indices (face.a, .b, .c) for vertices for a triangle
+    face_t mesh_face = mesh_faces[f];
+    vec3_t face_vertices[3];
+    // each mesh vertex is 1-based index.
+    face_vertices[0] = mesh_vertices[mesh_face.a - 1];
+    face_vertices[1] = mesh_vertices[mesh_face.b - 1];
+    face_vertices[2] = mesh_vertices[mesh_face.c - 1];
 
-    // move the points away from the camera:
-    point.z -= camera_position.z;
+    triangle_t projected_triangle;
+    for (int i = 0; i < 3; i++) {
+      vec3_t point = face_vertices[i];
 
-    // project
-    vec2_t projected_point = project(point);
-    projected_points[i] = projected_point;
+      // apply this random transformation
+      point = rotate(point, cube_rotation);
+
+      // move the points away from the camera:
+      point.z -= camera_position.z;
+
+      // project the current vertex:
+      vec2_t projected_point = project(point);
+
+      // scale and translate the projected point to the middle of the screen:
+      projected_point.x += window_width / 2;
+      projected_point.y += window_height / 2;
+      projected_triangle.points[i] = projected_point;
+    }
+
+    // save the projected triangle in the array of triangles to render:
+    triangles_to_render[f] = projected_triangle;
   }
 }
 
@@ -175,9 +176,11 @@ void update() {
 }
 
 void draw_cube() {
-  for (int i = 0; i < CUBE_POINTS; i += 1) {
-    vec2_t p = projected_points[i];
-    draw_rect(p.x + window_width / 2, p.y + window_height / 2, 4, 4, 0x8AAABB);
+  for (int f = 0; f < N_MESH_FACES; f += 1) {
+    triangle_t triangle = triangles_to_render[f];
+    draw_rect(triangle.points[0].x, triangle.points[0].y, 4, 4, 0x8AAABB);
+    draw_rect(triangle.points[1].x, triangle.points[1].y, 4, 4, 0x8AAABB);
+    draw_rect(triangle.points[2].x, triangle.points[2].y, 4, 4, 0x8AAABB);
   }
 }
 
