@@ -113,6 +113,7 @@ void render(void) {
   clear_color_buffer(color);
 
   draw_cube();
+  draw_line(100, 200, 300, 50, 0xF0ABAB);
 
   // render
   render_color_buffer();

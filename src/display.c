@@ -76,6 +76,26 @@ void draw_rect(int x, int y, int width, int height, uint32_t color) {
   }
 }
 
+// DDA algorithm
+void draw_line(int x1, int y1, int x2, int y2, uint32_t color) {
+  int delta_x = x2 - x1;
+  int delta_y = y2 - y1;
+  int longest_side_length =
+      abs(delta_x) >= abs(delta_y) ? abs(delta_x) : abs(delta_y);
+
+  // according to the algorithm, in every step we move the same amount
+  float step_x = delta_x / (float)longest_side_length;
+  float step_y = delta_y / (float)longest_side_length;
+
+  float current_x = x1;
+  float current_y = y1;
+  for (int i = 0; i <= longest_side_length; i++) {
+    draw_pixel(round(current_x), round(current_y), color);
+    current_x += step_x;
+    current_y += step_y;
+  }
+}
+
 void draw_pixel(int x, int y, uint32_t color) {
   if (x >= 0 && x < window_width && y >= 0 && y < window_height) {
     color_buffer[y * window_width + x] = color;
