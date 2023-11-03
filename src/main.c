@@ -17,7 +17,7 @@ uint64_t previous_frame_time;
 /// The projected triangles to render
 triangle_t triangles_to_render[N_MESH_FACES];
 
-vec3_t camera_position = {0, 0, -2};
+vec3_t camera_position = {0, 0, -6};
 float fov_factor = 1240;
 
 void setup() {
@@ -97,6 +97,10 @@ void update() {
 void draw_cube() {
   for (int f = 0; f < N_MESH_FACES; f += 1) {
     triangle_t triangle = triangles_to_render[f];
+    draw_triangle(triangle.points[0].x, triangle.points[0].y,
+                  triangle.points[1].x, triangle.points[1].y,
+                  triangle.points[2].x, triangle.points[2].y,
+                  0x8AAA09 + 20 * f);
     draw_rect(triangle.points[0].x, triangle.points[0].y, 4, 4, 0x8AAABB);
     draw_rect(triangle.points[1].x, triangle.points[1].y, 4, 4, 0x8AAABB);
     draw_rect(triangle.points[2].x, triangle.points[2].y, 4, 4, 0x8AAABB);
@@ -113,7 +117,7 @@ void render(void) {
   clear_color_buffer(color);
 
   draw_cube();
-  draw_line(100, 200, 300, 50, 0xF0ABAB);
+  draw_triangle(120, 20, 800, 550, 340, 50, 0xF0ABAB);
 
   // render
   render_color_buffer();

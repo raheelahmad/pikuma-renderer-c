@@ -96,6 +96,13 @@ void draw_line(int x1, int y1, int x2, int y2, uint32_t color) {
   }
 }
 
+void draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3,
+                   uint32_t color) {
+  draw_line(x1, y1, x2, y2, color);
+  draw_line(x3, y3, x2, y2, color);
+  draw_line(x1, y1, x3, y3, color);
+}
+
 void draw_pixel(int x, int y, uint32_t color) {
   if (x >= 0 && x < window_width && y >= 0 && y < window_height) {
     color_buffer[y * window_width + x] = color;
