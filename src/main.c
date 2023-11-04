@@ -1,3 +1,4 @@
+#include "array.h"
 #include "display.h"
 #include "mesh.h"
 #include "triangle.h"
@@ -15,7 +16,7 @@
 uint64_t previous_frame_time;
 
 /// The projected triangles to render
-triangle_t triangles_to_render[N_MESH_FACES];
+triangle_t *projected_triangles_to_render;
 
 vec3_t camera_position = {0, 0, -6};
 float fov_factor = 1240;
@@ -46,18 +47,27 @@ void update_cube() {
   cube_rotation.y += 0.005;
   cube_rotation.x += 0.005;
 
+  // initialize the array of triangles to render
+  // we reset for each frame:
+  projected_triangles_to_render = NULL;
+
   // Project the points on to the projection plane.
   // loop all the faces of the cube mesh
   for (int f = 0; f < N_MESH_FACES; f++) {
     // each face has 3 indices (face.a, .b, .c) for vertices for a triangle
     face_t mesh_face = mesh_faces[f];
     vec3_t face_vertices[3];
-    // each mesh vertex is 1-based index.
+    // mesh face's a,b,c are 1-based index into the vertices held
+    // in `mesh_vertices`.
+    // So here we are collecting all the 3-D vertices that make up
+    // the current mesh_face.
     face_vertices[0] = mesh_vertices[mesh_face.a - 1];
     face_vertices[1] = mesh_vertices[mesh_face.b - 1];
     face_vertices[2] = mesh_vertices[mesh_face.c - 1];
 
+    // set of 3 projected 2-D vertices from the face's 3-D vertices.
     triangle_t projected_triangle;
+    // project and store each of the 3 vertices:
     for (int i = 0; i < 3; i++) {
       vec3_t point = face_vertices[i];
 
@@ -77,7 +87,7 @@ void update_cube() {
     }
 
     // save the projected triangle in the array of triangles to render:
-    triangles_to_render[f] = projected_triangle;
+    array_push(projected_triangles_to_render, projected_triangle);
   }
 }
 
@@ -95,8 +105,11 @@ void update() {
 }
 
 void draw_cube() {
-  for (int f = 0; f < N_MESH_FACES; f += 1) {
-    triangle_t triangle = triangles_to_render[f];
+  // get the number of triangles
+  int faces_count = array_length(projected_triangles_to_render);
+
+  for (int f = 0; f < faces_count; f += 1) {
+    triangle_t triangle = projected_triangles_to_render[f];
     draw_triangle(triangle.points[0].x, triangle.points[0].y,
                   triangle.points[1].x, triangle.points[1].y,
                   triangle.points[2].x, triangle.points[2].y,
@@ -117,7 +130,8 @@ void render(void) {
   clear_color_buffer(color);
 
   draw_cube();
-  draw_triangle(120, 20, 800, 550, 340, 50, 0xF0ABAB);
+
+  array_free(projected_triangles_to_render);
 
   // render
   render_color_buffer();
