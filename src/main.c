@@ -18,7 +18,7 @@ uint64_t previous_frame_time;
 /// The projected triangles to render
 triangle_t *projected_triangles_to_render;
 
-vec3_t camera_position = {0, 0, -6};
+vec3_t camera_position = {0, 0, -4};
 float fov_factor = 1240;
 
 void setup() {
@@ -32,7 +32,7 @@ void setup() {
                                            SDL_TEXTUREACCESS_STREAMING,
                                            window_width, window_height);
 
-  load_cube_mesh_data();
+  load_obj_mesh_data("./assets/spot.obj");
 }
 
 // Simply project a 3d point on to 2D
@@ -43,9 +43,9 @@ vec2_t project(vec3_t point) {
 }
 
 void update_cube() {
-  mesh.rotation.z += 0.001;
-  mesh.rotation.y += 0.001;
-  mesh.rotation.x += 0.001;
+  /* mesh.rotation.z += 0.005; */
+  /* mesh.rotation.y += 0.001; */
+  /* mesh.rotation.x += 0.005; */
 
   // initialize the array of triangles to render
   // we reset for each frame:

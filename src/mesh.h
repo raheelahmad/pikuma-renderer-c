@@ -2,15 +2,6 @@
 
 #include "triangle.h"
 #import "vector.h"
-
-// --- Older "cube"
-
-#define N_CUBE_VERTICES 8
-#define N_CUBE_FACES (6 * 2) // 6 cube faces, 2 triangles per face
-
-extern vec3_t cube_vertices[N_CUBE_VERTICES];
-extern face_t cube_faces[N_CUBE_FACES];
-
 // --- Mesh using dynamic vertices and faces.
 
 /// Collection of vertices and faces.
@@ -24,4 +15,7 @@ typedef struct {
 // Global mesh
 extern mesh_t mesh;
 
+// Load the hard-coded cube data
 void load_cube_mesh_data(void);
+
+void load_obj_mesh_data(char *filename);
